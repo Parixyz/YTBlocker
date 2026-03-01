@@ -28,12 +28,21 @@ function isShortsPage() {
 }
 
 function hideShortsCards() {
-  const shortsContainers = document.querySelectorAll('a[href*="/shorts/"]');
-  shortsContainers.forEach((el) => {
+  const shortsLinks = document.querySelectorAll('a[href*="/shorts/"]');
+  shortsLinks.forEach((el) => {
     const container = el.closest('ytd-rich-item-renderer, ytd-video-renderer');
-    if (container) {
+    if (container && !container.dataset.shortBlockerHidden) {
+      container.dataset.shortBlockerHidden = 'true';
       container.style.display = 'none';
     }
+  });
+}
+
+function restoreHiddenShortsCards() {
+  const hidden = document.querySelectorAll('[data-short-blocker-hidden="true"]');
+  hidden.forEach((container) => {
+    container.style.removeProperty('display');
+    delete container.dataset.shortBlockerHidden;
   });
 }
 
@@ -84,6 +93,7 @@ function showStayConcentratedDialog() {
 function runBlockingBehavior() {
   if (!blockerEnabled) {
     removeOverlay();
+    restoreHiddenShortsCards();
     return;
   }
 
