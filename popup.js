@@ -1,0 +1,2 @@
+document.getElementById('settings-btn').addEventListener('click', () => { alert('Settings page coming soon!'); });
+document.getElementById('add-quote-btn').addEventListener('click', () => { const newQuote = prompt('Enter your productivity quote:'); if (newQuote) { chrome.storage.sync.set({ customQuote: newQuote }, () => { alert('Quote added!'); }); } });
