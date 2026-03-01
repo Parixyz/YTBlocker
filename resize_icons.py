@@ -86,9 +86,9 @@ def resize_icons(
 
 if __name__ == "__main__":
     resize_icons(
-        "icons/IconOrganizer.png",
+        "icons/IconYTB.png",
         out_dir="icons",
-        sizes=(16, 48, 128),
+        sizes=(16, 48, 128,64),
         alpha_threshold=0,   # set to e.g. 10 if you want to ignore faint semi-transparent edges
         do_alpha_crop=True
     )
