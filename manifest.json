@@ -3,13 +3,26 @@
   "name": "YouTube Shorts Blocker - Productivity Quotes",
   "version": "1.0.0",
   "description": "Block YouTube Shorts and display productivity quotes instead",
-  "permissions": ["scripting", "activeTab", "storage"],
-  "host_permissions": ["https://www.youtube.com/*"],
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*"
+  ],
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/*"],
-      "js": ["content.js"],
-      "css": ["styles.css"]
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_start"
     }
   ],
   "background": {
@@ -23,5 +36,17 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "quote.html",
+        "quote.css",
+        "quote.js"
+      ],
+      "matches": [
+        "https://www.youtube.com/*"
+      ]
+    }
+  ]
 }
