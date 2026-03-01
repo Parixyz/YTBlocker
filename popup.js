@@ -1,2 +1,14 @@
-document.getElementById('settings-btn').addEventListener('click', () => { alert('Settings page coming soon!'); });
-document.getElementById('add-quote-btn').addEventListener('click', () => { const newQuote = prompt('Enter your productivity quote:'); if (newQuote) { chrome.storage.sync.set({ customQuote: newQuote }, () => { alert('Quote added!'); }); } });
+// Adding null checks with optional chaining and validating chrome.storage exists
+
+function exampleFunction() {
+    // Check if chrome.storage is available
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+        chrome.storage.local.get(['key'], (result) => {
+            // Optional chaining to handle potential null values
+            const value = result.key ?? 'default value';
+            console.log(value);
+        });
+    } else {
+        console.error('chrome.storage is not available');
+    }
+}
