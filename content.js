@@ -26,46 +26,41 @@ function restoreHiddenShortsCards() {
   });
 }
 
-function getActiveShortsVideo() {
-  return document.querySelector('video.html5-main-video');
-}
+function stopAllMediaPlayback() {
+  const mediaElements = document.querySelectorAll('video, audio');
+  mediaElements.forEach((media) => {
+    if (!media.dataset.shortBlockerPreviousMuted) {
+      media.dataset.shortBlockerPreviousMuted = String(media.muted);
+    }
 
-function blockShortsPlayback() {
-  if (!blockerEnabled || !isShortsPage()) {
-    return;
-  }
+    media.muted = true;
+    media.volume = 0;
 
-  const video = getActiveShortsVideo();
-  if (!video) {
-    return;
-  }
-
-  if (!video.dataset.shortBlockerPreviousMuted) {
-    video.dataset.shortBlockerPreviousMuted = String(video.muted);
-  }
-
-  video.muted = true;
-  video.pause();
+    try {
+      media.pause();
+      media.currentTime = 0;
+    } catch (error) {
+      // Ignore media timing errors while force-stopping Shorts playback.
+    }
+  });
 }
 
 function restoreShortsPlayback() {
-  const video = getActiveShortsVideo();
-  if (!video) {
-    return;
-  }
-
-  if (video.dataset.shortBlockerPreviousMuted) {
-    video.muted = video.dataset.shortBlockerPreviousMuted === 'true';
-    delete video.dataset.shortBlockerPreviousMuted;
-  }
+  const mediaElements = document.querySelectorAll('video, audio');
+  mediaElements.forEach((media) => {
+    if (media.dataset.shortBlockerPreviousMuted) {
+      media.muted = media.dataset.shortBlockerPreviousMuted === 'true';
+      delete media.dataset.shortBlockerPreviousMuted;
+    }
+  });
 }
 
 function ensurePlaybackGuard() {
   const shouldGuard = blockerEnabled && isShortsPage();
 
   if (shouldGuard && !playbackGuardInterval) {
-    blockShortsPlayback();
-    playbackGuardInterval = window.setInterval(blockShortsPlayback, 400);
+    stopAllMediaPlayback();
+    playbackGuardInterval = window.setInterval(stopAllMediaPlayback, 80);
     return;
   }
 
@@ -125,7 +120,7 @@ function initializeBlockerState() {
 new MutationObserver(() => {
   if (location.href !== lastUrl) {
     lastUrl = location.href;
-    setTimeout(runBlockingBehavior, 200);
+    setTimeout(runBlockingBehavior, 0);
   }
 }).observe(document, { subtree: true, childList: true });
 
