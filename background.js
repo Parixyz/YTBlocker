@@ -1,1 +1,6 @@
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => { if (changeInfo.status === 'complete' && tab.url.includes('youtube.com')) { chrome.scripting.executeScript({ target: { tabId: tabId }, function: blockShorts }); } }); function blockShorts() { if (window.location.pathname.includes('/shorts/')) { window.location.href = 'https://www.youtube.com'; } }
+// Assuming tab is a parameter passed to a function
+if (tab && tab.url && tab.url.includes('some_string')) {
+    // Your logic here
+} else {
+    // Handle cases where tab or tab.url is null/undefined
+}
