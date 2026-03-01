@@ -77,8 +77,6 @@ function redirectToQuotePage() {
   }
 
   redirectingToQuotePage = true;
-  stopAllMediaPlayback();
-
   const quoteUrl = chrome.runtime.getURL('quote.html');
   const currentUrl = encodeURIComponent(window.location.href);
   const fullQuoteUrl = `${quoteUrl}?from=${currentUrl}`;
@@ -95,7 +93,7 @@ function runBlockingBehavior() {
 
   hideShortsCards();
   if (isShortsPage()) {
-    stopAllMediaPlayback();
+    blockShortsPlayback();
     redirectToQuotePage();
   }
 }
