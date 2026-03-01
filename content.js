@@ -18,6 +18,7 @@ const quotes = [
 
 let blockerEnabled = true;
 let lastUrl = location.href;
+let playbackGuardInterval = null;
 
 function getRandomQuote() {
   return quotes[Math.floor(Math.random() * quotes.length)];
@@ -44,6 +45,56 @@ function restoreHiddenShortsCards() {
     container.style.removeProperty('display');
     delete container.dataset.shortBlockerHidden;
   });
+}
+
+function getActiveShortsVideo() {
+  return document.querySelector('video.html5-main-video');
+}
+
+function blockShortsPlayback() {
+  if (!blockerEnabled || !isShortsPage()) {
+    return;
+  }
+
+  const video = getActiveShortsVideo();
+  if (!video) {
+    return;
+  }
+
+  if (!video.dataset.shortBlockerPreviousMuted) {
+    video.dataset.shortBlockerPreviousMuted = String(video.muted);
+  }
+
+  video.muted = true;
+  video.pause();
+}
+
+function restoreShortsPlayback() {
+  const video = getActiveShortsVideo();
+  if (!video) {
+    return;
+  }
+
+  if (video.dataset.shortBlockerPreviousMuted) {
+    video.muted = video.dataset.shortBlockerPreviousMuted === 'true';
+    delete video.dataset.shortBlockerPreviousMuted;
+  }
+}
+
+function ensurePlaybackGuard() {
+  const shouldGuard = blockerEnabled && isShortsPage();
+
+  if (shouldGuard && !playbackGuardInterval) {
+    blockShortsPlayback();
+    playbackGuardInterval = window.setInterval(blockShortsPlayback, 400);
+    return;
+  }
+
+  if (!shouldGuard && playbackGuardInterval) {
+    clearInterval(playbackGuardInterval);
+    playbackGuardInterval = null;
+    restoreShortsPlayback();
+  }
 }
 
 function removeOverlay() {
@@ -91,6 +142,8 @@ function showStayConcentratedDialog() {
 }
 
 function runBlockingBehavior() {
+  ensurePlaybackGuard();
+
   if (!blockerEnabled) {
     removeOverlay();
     restoreHiddenShortsCards();
@@ -99,6 +152,7 @@ function runBlockingBehavior() {
 
   hideShortsCards();
   if (isShortsPage()) {
+    blockShortsPlayback();
     showStayConcentratedDialog();
   } else {
     removeOverlay();
@@ -130,6 +184,13 @@ new MutationObserver(() => {
     setTimeout(runBlockingBehavior, 200);
   }
 }).observe(document, { subtree: true, childList: true });
+
+window.addEventListener('beforeunload', () => {
+  if (playbackGuardInterval) {
+    clearInterval(playbackGuardInterval);
+    playbackGuardInterval = null;
+  }
+});
 
 initializeBlockerState();
 runBlockingBehavior();
