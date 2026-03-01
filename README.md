@@ -13,7 +13,7 @@ Or [download directly](https://github.com/Parixyz/YTBlocker/releases/download/v1
 ## ✨ Features
 
 ✅ Blocks YouTube Shorts automatically  
-✅ Shows a "Stay Concentrated" dialog with random productivity quotes  
+✅ Redirects Shorts visits to a dedicated "Stay Concentrated" quote page  
 ✅ Enable/disable blocker from extension popup  
 ✅ Beautiful, motivational UI  
 ✅ No data collection or tracking  
@@ -45,7 +45,7 @@ Or [download directly](https://github.com/Parixyz/YTBlocker/releases/download/v1
 1. Install the extension
 2. Use YouTube normally
 3. Try to watch a YouTube Short
-4. See a "Stay Concentrated" dialog with an inspiring quote instead! 💪
+4. Get redirected to a "Stay Concentrated" quote page with an inspiring quote instead! 💪
 5. Click "Back to YouTube" to continue or "New Quote" for another quote
 6. Use the popup toggle any time to enable/disable blocking
 
