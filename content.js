@@ -1,28 +1,7 @@
-const quotes = [
-  "The only way to do great work is to love what you do. - Steve Jobs",
-  "Don't watch the clock; do what it does. Keep going. - Sam Levenson",
-  "Success is not final, failure is not fatal. - Winston Churchill",
-  "Your limitation—it's only your imagination.",
-  "Great things never came from comfort zones.",
-  "Dream it. Wish it. Do it.",
-  "Success doesn't just find you. You have to go out and get it.",
-  "The harder you work for something, the greater you'll feel when you achieve it.",
-  "Dream bigger. Do bigger.",
-  "Don't stop when you're tired. Stop when you're done.",
-  "Wake up with determination. Go to bed with satisfaction.",
-  "Do something today that your future self will thank you for.",
-  "Little things make big days.",
-  "It's going to be hard, but hard does not mean impossible.",
-  "Don't wait for opportunity. Create it."
-];
-
 let blockerEnabled = true;
 let lastUrl = location.href;
 let playbackGuardInterval = null;
-
-function getRandomQuote() {
-  return quotes[Math.floor(Math.random() * quotes.length)];
-}
+let redirectingToQuotePage = false;
 
 function isShortsPage() {
   return window.location.pathname.includes('/shorts/');
@@ -47,46 +26,45 @@ function restoreHiddenShortsCards() {
   });
 }
 
-function getActiveShortsVideo() {
-  return document.querySelector('video.html5-main-video');
+function stopAllMediaPlayback() {
+  const mediaElements = document.querySelectorAll('video, audio');
+  mediaElements.forEach((media) => {
+    if (!media.dataset.shortBlockerPreviousMuted) {
+      media.dataset.shortBlockerPreviousMuted = String(media.muted);
+    }
+
+    media.muted = true;
+    media.volume = 0;
+
+    try {
+      media.pause();
+      media.currentTime = 0;
+    } catch (error) {
+      // Ignore media timing errors while force-stopping Shorts playback.
+    }
+  });
 }
 
 function blockShortsPlayback() {
-  if (!blockerEnabled || !isShortsPage()) {
-    return;
-  }
-
-  const video = getActiveShortsVideo();
-  if (!video) {
-    return;
-  }
-
-  if (!video.dataset.shortBlockerPreviousMuted) {
-    video.dataset.shortBlockerPreviousMuted = String(video.muted);
-  }
-
-  video.muted = true;
-  video.pause();
+  stopAllMediaPlayback();
 }
 
 function restoreShortsPlayback() {
-  const video = getActiveShortsVideo();
-  if (!video) {
-    return;
-  }
-
-  if (video.dataset.shortBlockerPreviousMuted) {
-    video.muted = video.dataset.shortBlockerPreviousMuted === 'true';
-    delete video.dataset.shortBlockerPreviousMuted;
-  }
+  const mediaElements = document.querySelectorAll('video, audio');
+  mediaElements.forEach((media) => {
+    if (media.dataset.shortBlockerPreviousMuted) {
+      media.muted = media.dataset.shortBlockerPreviousMuted === 'true';
+      delete media.dataset.shortBlockerPreviousMuted;
+    }
+  });
 }
 
 function ensurePlaybackGuard() {
   const shouldGuard = blockerEnabled && isShortsPage();
 
   if (shouldGuard && !playbackGuardInterval) {
-    blockShortsPlayback();
-    playbackGuardInterval = window.setInterval(blockShortsPlayback, 400);
+    stopAllMediaPlayback();
+    playbackGuardInterval = window.setInterval(stopAllMediaPlayback, 80);
     return;
   }
 
@@ -97,65 +75,32 @@ function ensurePlaybackGuard() {
   }
 }
 
-function removeOverlay() {
-  const existing = document.getElementById('stay-concentrated-overlay');
-  if (existing) {
-    existing.remove();
-  }
-}
-
-function showStayConcentratedDialog() {
-  if (!blockerEnabled || !isShortsPage()) {
-    removeOverlay();
+function redirectToQuotePage() {
+  if (redirectingToQuotePage) {
     return;
   }
 
-  if (document.getElementById('stay-concentrated-overlay')) {
-    return;
-  }
+  redirectingToQuotePage = true;
+  stopAllMediaPlayback();
 
-  const overlay = document.createElement('div');
-  overlay.id = 'stay-concentrated-overlay';
-  overlay.innerHTML = `
-    <div class="quote-container" role="dialog" aria-modal="true" aria-labelledby="stay-concentrated-title">
-      <h2 id="stay-concentrated-title">🧠 Stay Concentrated</h2>
-      <p class="quote-text">${getRandomQuote()}</p>
-      <div class="button-row">
-        <button id="back-to-home-btn">Back to YouTube</button>
-        <button id="new-quote-btn">New Quote</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  document.getElementById('back-to-home-btn')?.addEventListener('click', () => {
-    window.location.href = 'https://www.youtube.com';
-  });
-
-  document.getElementById('new-quote-btn')?.addEventListener('click', () => {
-    const quoteNode = overlay.querySelector('.quote-text');
-    if (quoteNode) {
-      quoteNode.textContent = getRandomQuote();
-    }
-  });
+  const quoteUrl = chrome.runtime.getURL('quote.html');
+  const currentUrl = encodeURIComponent(window.location.href);
+  const fullQuoteUrl = `${quoteUrl}?from=${currentUrl}`;
+  window.location.replace(fullQuoteUrl);
 }
 
 function runBlockingBehavior() {
   ensurePlaybackGuard();
 
   if (!blockerEnabled) {
-    removeOverlay();
     restoreHiddenShortsCards();
     return;
   }
 
   hideShortsCards();
   if (isShortsPage()) {
-    blockShortsPlayback();
-    showStayConcentratedDialog();
-  } else {
-    removeOverlay();
+    stopAllMediaPlayback();
+    redirectToQuotePage();
   }
 }
 
@@ -181,7 +126,7 @@ function initializeBlockerState() {
 new MutationObserver(() => {
   if (location.href !== lastUrl) {
     lastUrl = location.href;
-    setTimeout(runBlockingBehavior, 200);
+    setTimeout(runBlockingBehavior, 0);
   }
 }).observe(document, { subtree: true, childList: true });
 
