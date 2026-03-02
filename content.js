@@ -45,6 +45,7 @@ function stopAllMediaPlayback() {
   });
 }
 
+
 function restoreShortsPlayback() {
   const mediaElements = document.querySelectorAll('video, audio');
   mediaElements.forEach((media) => {
@@ -93,7 +94,7 @@ function runBlockingBehavior() {
 
   hideShortsCards();
   if (isShortsPage()) {
-    blockShortsPlayback();
+    stopAllMediaPlayback();
     redirectToQuotePage();
   }
 }
