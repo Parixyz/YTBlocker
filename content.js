@@ -93,7 +93,7 @@ function runBlockingBehavior() {
 
   hideShortsCards();
   if (isShortsPage()) {
-    blockShortsPlayback();
+    stopAllMediaPlayback();
     redirectToQuotePage();
   }
 }
