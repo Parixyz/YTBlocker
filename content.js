@@ -98,7 +98,10 @@ function runBlockingBehavior() {
 
   hideShortsCards();
   if (isShortsPage()) {
-    stopAllMediaPlayback();
+    const playbackBlocker = typeof blockShortsPlayback === 'function'
+      ? blockShortsPlayback
+      : stopAllMediaPlayback;
+    playbackBlocker();
     redirectToQuotePage();
   }
 }
